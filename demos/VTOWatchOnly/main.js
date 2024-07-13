@@ -1,44 +1,29 @@
+// Global settings and state definitions
 const _settings = {
-  threshold: 0.98, // detection sensitivity, between 0 and 1
-  
-  // pose computation and stabilization:
-  poseLandmarksLabels: [
-  // wristRightBottom not working
-    //"wristBack", "wristLeft", "wristRight", "wristPalm", "wristPalmTop", "wristBackTop", "wristRightBottom", "wristLeftBottom" // more accurate
-    "wristBack", "wristRight", "wristPalm", "wristPalmTop", "wristBackTop", "wristLeft" // more stable
-   ],
-  NNsPaths: ['../../neuralNets/NN_WRISTBACK_29.json'], // best: 27
+  threshold: 0.98,
+  poseLandmarksLabels: ["wristBack", "wristRight", "wristPalm", "wristPalmTop", "wristBackTop", "wristLeft"],
+  NNsPaths: ['../../neuralNets/NN_WRISTBACK_29.json'],
   isPoseFilter: true,
-  objectPointsPositionFactors: [1.0, 1.3, 1.0], // factors to apply to point positions to lower pose angles - dirty tweak
-
-
-  // soft occluder parameters (soft because we apply a fading gradient)
-  occluderRadiusRange: [4, 4.7], // first value: minimum or interior radius of the occluder (full transparency).
-                                 // second value: maximum or exterior radius of the occluder (full opacity, no occluding effect)
-  occluderHeight: 48, // height of the cylinder
-  occluderOffset: [0,0,0], // relative to the wrist 3D model
-  occluderQuaternion: [0.707,0,0,0.707], // rotation of Math.PI/2 along X axis,
-  occluderFlattenCoeff: 0.6, // 1 -> occluder is a cylinder 0.5 -> flatten by 50%
-
+  objectPointsPositionFactors: [1.0, 1.3, 1.0],
+  occluderRadiusRange: [4, 4.7],
+  occluderHeight: 48,
+  occluderOffset: [0,0,0],
+  occluderQuaternion: [0.707,0,0,0.707],
+  occluderFlattenCoeff: 0.6,
   stabilizerOptions: {
     minCutOff: 0.001,
     beta: 4,
     freqRange: [2, 144],
-    forceFilterNNInputPxRange: [2.5, 6],//[1.5, 4],
+    forceFilterNNInputPxRange: [2.5, 6],
   },
-
-  // model settings:
   modelURL: 'assets/watchCasio.glb',
   modelScale: 1.3 * 1.462,
   modelOffset: [0.076, -0.916, -0.504],
-  modelQuaternion: [0,0,0,1], // Format: X,Y,Z,W (and not W,X,Y,Z like Blender)
-
-  // debug flags:
+  modelQuaternion: [0,0,0,1],
   debugDisplayLandmarks: false,
   debugMeshMaterial: false,
   debugOccluder: false
 };
-
 
 const _states = {
   notLoaded: -1,
@@ -50,34 +35,24 @@ const _states = {
 let _state = _states.notLoaded;
 let _isInstructionsHidden = false;
 
-
-function setFullScreen(cv){
+// Function to set canvas size to full screen
+function setFullScreen(cv) {
   const pixelRatio = window.devicePixelRatio || 1;
   const w = window.innerWidth;
   const h = window.innerHeight;
-  cv.width = pixelRatio * Math.min(w, h*3/4);
+  cv.width = pixelRatio * Math.min(w, h * 3 / 4);
   cv.height = pixelRatio * h;
 }
 
-
-// entry point:
-function main(){
+// Main entry point of the application
+function main() {
   _state = _states.loading;
-
-  // get canvases and size them:
   const handTrackerCanvas = document.getElementById('handTrackerCanvas');
   const VTOCanvas = document.getElementById('VTOCanvas');
-  
+
   setFullScreen(handTrackerCanvas);
   setFullScreen(VTOCanvas);
 
-  // init change VTO button:
-  ChangeCameraHelper.init({
-    canvases: [handTrackerCanvas, VTOCanvas],
-    DOMChangeCameraButton: document.getElementById('changeCamera')
-  })
-
-  // initialize Helper:
   HandTrackerThreeHelper.init({
     landmarksStabilizerSpec: _settings.stabilizerOptions,
     scanSettings: {
@@ -98,150 +73,100 @@ function main(){
     callbackTrack: callbackTrack,
     VTOCanvas: VTOCanvas,
     videoSettings: {
-      facingMode: 'user'
+      facingMode: 'environment'
     },
     handTrackerCanvas: handTrackerCanvas,
     debugDisplayLandmarks: _settings.debugDisplayLandmarks,
-  }).then(start).catch(function(err){
+  }).then(start).catch(err => {
     throw new Error(err);
   });
-} 
+}
 
-
-function setup_lighting(three){
+// Set up the scene lighting
+function setup_lighting(three) {
   const scene = three.scene;
-
-  const pmremGenerator = new THREE.PMREMGenerator( three.renderer );
+  const pmremGenerator = new THREE.PMREMGenerator(three.renderer);
   pmremGenerator.compileEquirectangularShader();
-
-  new THREE.RGBELoader().setDataType( THREE.HalfFloatType )
-    .load('assets/hotel_room_1k.hdr', function ( texture ) {
-    const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
-    pmremGenerator.dispose();
-    scene.environment = envMap;
-  });
-
-  // improve WebGLRenderer settings:
+  new THREE.RGBELoader().setDataType(THREE.HalfFloatType)
+    .load('assets/hotel_room_1k.hdr', function(texture) {
+      const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+      pmremGenerator.dispose();
+      scene.environment = envMap;
+    });
   three.renderer.toneMapping = THREE.ACESFilmicToneMapping;
   three.renderer.outputEncoding = THREE.sRGBEncoding;
 }
 
-
-function load_model(threeLoadingManager){
-  if (_state !== _states.running && _state !== _states.idle){
-    return; // model is already loaded or state is busy or loading
+// Load the 3D model
+function load_model(threeLoadingManager) {
+  if (_state !== _states.running && _state !== _states.idle) {
+    return; // Early return if the model is already loaded or the state is busy/loading
   }
   _state = _states.busy;
-  
-  // remove previous model but not occluders:
-  HandTrackerThreeHelper.clear_threeObjects(false);
-  
-  // load new model:
-  new THREE.GLTFLoader(threeLoadingManager).load(_settings.modelURL, function(model){
-    const me = model.scene.children[0]; // instance of THREE.Mesh
+  HandTrackerThreeHelper.clear_threeObjects(false); // Remove previous model but keep occluders
+  new THREE.GLTFLoader(threeLoadingManager).load(_settings.modelURL, function(model) {
+    const me = model.scene.children[0];
     me.scale.set(1, 1, 1);
-    
-    // tweak the material:
-    if (_settings.debugMeshMaterial){
-      me.traverse(function(child){
-        if (child.material){
+    if (_settings.debugMeshMaterial) {
+      me.traverse(child => {
+        if (child.material) {
           child.material = new THREE.MeshNormalMaterial();
-        }});
+        }
+      });
     }
-
-    // tweak position, scale and rotation:
-    if (_settings.modelScale){
+    if (_settings.modelScale) {
       me.scale.multiplyScalar(_settings.modelScale);
     }
-    if (_settings.modelOffset){
-      const d = _settings.modelOffset;
-      const displacement = new THREE.Vector3(d[0], d[2], -d[1]); // inverse Y and Z
+    if (_settings.modelOffset) {
+      const displacement = new THREE.Vector3(..._settings.modelOffset.map((d, i) => i === 1 ? -d : d));
       me.position.add(displacement);
     }
-    if (_settings.modelQuaternion){
-      const q = _settings.modelQuaternion;
-      me.quaternion.set(q[0], q[2], -q[1], q[3]);
+    if (_settings.modelQuaternion) {
+      me.quaternion.set(..._settings.modelQuaternion);
     }
-
-    // add to the tracker:
     HandTrackerThreeHelper.add_threeObject(me);
-
     _state = _states.running;
-
   });
 }
 
-
-function start(three){
-  VTOCanvas.style.zIndex = 3; // fix a weird bug on iOS15 / safari
-
+// Start the application setup
+function start(three) {
+  VTOCanvas.style.zIndex = 3;
   setup_lighting(three);
-
-  three.loadingManager.onLoad = function(){
-    console.log('INFO in main.js: All THREE.js stuffs are loaded');
+  three.loadingManager.onLoad = function() {
+    console.log('All THREE.js stuffs are loaded');
     hide_loading();
     _state = _states.running;
-  }
-
-  add_softOccluder().then(function(){
+  };
+  add_softOccluder().then(() => {
     _state = _states.idle;
-  }).then(function(){
     load_model(three.loadingManager);
   });
 }
 
-
-function add_softOccluder(){
-  // add a soft occluder (for the wrist for example):
-  const occluderRadius = _settings.occluderRadiusRange[1];
-  const occluderMesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(occluderRadius, occluderRadius, _settings.occluderHeight, 32, 1, true),
-    new THREE.MeshNormalMaterial()
-  );
-  const dr = _settings.occluderRadiusRange[1] - _settings.occluderRadiusRange[0];
-  occluderMesh.position.fromArray(_settings.occluderOffset);
-  occluderMesh.quaternion.fromArray(_settings.occluderQuaternion);
-  occluderMesh.scale.set(1.0, 1.0, _settings.occluderFlattenCoeff);
-  HandTrackerThreeHelper.add_threeSoftOccluder(occluderMesh, occluderRadius, dr, _settings.debugOccluder);
-  return Promise.resolve();
-}
-
-
-function hide_loading(){
-  // remove loading:
+// Additional functions for UI interactions and loading states
+function hide_loading() {
   const domLoading = document.getElementById('loading');
   domLoading.style.opacity = 0;
-  setTimeout(function(){
+  setTimeout(() => {
     domLoading.parentNode.removeChild(domLoading);
   }, 800);
 }
 
-
-function hide_instructions(){
+function hide_instructions() {
   const domInstructions = document.getElementById('instructions');
-  if (!domInstructions){
-    return;
-  }
+  if (!domInstructions) return;
   domInstructions.style.opacity = 0;
   _isInstructionsHidden = true;
-  setTimeout(function(){
+  setTimeout(() => {
     domInstructions.parentNode.removeChild(domInstructions);
   }, 800);
 }
 
-
-function change_camera(){
-  ChangeCameraHelper.change_camera();
-}
-
-
-function callbackTrack(detectState){
-  if (detectState.isDetected) {
-    if (!_isInstructionsHidden){
-      hide_instructions();
-    }
+function callbackTrack(detectState) {
+  if (detectState.isDetected && !_isInstructionsHidden) {
+    hide_instructions();
   }
 }
-
 
 window.addEventListener('load', main);
