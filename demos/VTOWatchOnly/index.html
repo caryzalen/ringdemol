@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>01</title>
+    <title>02</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
     <link href="style.css" rel="stylesheet"> <!-- 外部引用 CSS -->
     <script src="libs.js" defer></script> <!-- 合并并异步加载库文件 -->
@@ -29,12 +29,12 @@
     <button onclick='change_camera()' id='changeCamera' aria-label="Change Camera">Change camera</button>
 
     <!-- 异步加载 JS 脚本 -->
-    <script src="WebARRocksHand.js" defer></script>
-    <script src="three.min.js" defer></script>
-    <script src="HandTrackerThreeHelper.js" defer></script>
-    <script src="ChangeCameraHelper.js" defer></script>
-    <script src="OneEuroLMStabilizer.js" defer></script>
-    <script src="PoseFlipFilter.js" defer></script>
+    <script src="../../dist/WebARRocksHand.js" defer></script>
+    <script src="../../libs/three/v136/build/three.js" defer></script>
+    <script src="../../helpers/HandTrackerThreeHelper.js" defer></script>
+    <script src="../../helpers/ChangeCameraHelper.js" defer></script>
+    <script src="../../helpers/landmarksStabilizers/OneEuroLMStabilizer.js" defer></script>
+    <script src="../../helpers/PoseFlipFilter.js" defer></script>
     <script src="main.js" defer></script>
 </body>
 </html>
