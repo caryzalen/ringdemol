@@ -4,15 +4,33 @@
     <meta charset="utf-8">
     <meta http-equiv="content-language" content="en-EN" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>05</title>    
+
+    <title>WEBARROCKSHAND WATCH VTO DEMO</title>
+    
+    <!-- INCLUDE WEBARROCKSHAND SCRIPT -->
     <script src="../../dist/WebARRocksHand.js"></script>
+    
+    <!-- THREE.JS - REPLACE IT BY three.min.js FOR PROD -->
     <script src="../../libs/three/v136/build/three.js"></script>
+
+    <!-- THREE.JS EXTENSIONS -->
     <script src="../../libs/three/v136/examples/js/loaders/GLTFLoader.js"></script>
     <script src="../../libs/three/v136/examples/js/loaders/RGBELoader.js"></script>
+
+    <!-- WEBARROCKSHAND THREEJS VTO HELPER -->
     <script src="../../helpers/HandTrackerThreeHelper.js"></script>
+
+    <!-- change camera helper -->
     <script src="../../helpers/ChangeCameraHelper.js"></script>
+    
+
+    <!-- WEBARROCKSHAND POINTS STABILIZER -->
     <script src="../../helpers/landmarksStabilizers/OneEuroLMStabilizer.js"></script>
+
+     <!-- POSEFLIP FILTER -->
     <script src="../../helpers/PoseFlipFilter.js"></script>
+    
+    <!-- INCLUDE MAIN DEMO SCRIPT -->
     <script src="./main.js"></script>
 
     <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet" />
@@ -33,7 +51,7 @@
         height: 100vh;
       }
       #handTrackerCanvas {
-       z-index: 1;
+        z-index: 1;
       }
       #VTOCanvas {
         z-index: 2;
@@ -95,6 +113,15 @@
 
       #changeCamera {
         display: none;
+        position: fixed;
+        z-index: 4;
+        bottom: 6px;
+        left: 6px;
+        background-color: rgba(0,0,0,0.5);
+        color: white;
+        font-variant: small-caps;
+        border: none;
+        padding: 12px;
       }
 
     </style>
@@ -128,5 +155,3 @@
     <button onclick='change_camera()' id='changeCamera'>Change camera</button>
   </body>
 </html>
- 
-如何優化這個手錶試戴的web ar
