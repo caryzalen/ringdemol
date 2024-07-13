@@ -98,7 +98,7 @@ function main(){
     callbackTrack: callbackTrack,
     VTOCanvas: VTOCanvas,
     videoSettings: {
-      facingMode: 'environment'
+      facingMode: 'user'
     },
     handTrackerCanvas: handTrackerCanvas,
     debugDisplayLandmarks: _settings.debugDisplayLandmarks,
