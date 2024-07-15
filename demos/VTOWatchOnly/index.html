@@ -5,17 +5,37 @@
     <meta http-equiv="content-language" content="en-EN" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-    <title>02</title>
+    <title>WEBARROCKSHAND WATCH VTO DEMO</title>
+    
+    <!-- INCLUDE WEBARROCKSHAND SCRIPT -->
     <script src="../../dist/WebARRocksHand.js"></script>
+    
+    <!-- THREE.JS - REPLACE IT BY three.min.js FOR PROD -->
     <script src="../../libs/three/v136/build/three.js"></script>
+
+    <!-- THREE.JS EXTENSIONS -->
     <script src="../../libs/three/v136/examples/js/loaders/GLTFLoader.js"></script>
     <script src="../../libs/three/v136/examples/js/loaders/RGBELoader.js"></script>
+
+    <!-- WEBARROCKSHAND THREEJS VTO HELPER -->
     <script src="../../helpers/HandTrackerThreeHelper.js"></script>
+
+    <!-- change camera helper -->
     <script src="../../helpers/ChangeCameraHelper.js"></script>
+    
+
+    <!-- WEBARROCKSHAND POINTS STABILIZER -->
     <script src="../../helpers/landmarksStabilizers/OneEuroLMStabilizer.js"></script>
+
+     <!-- POSEFLIP FILTER -->
     <script src="../../helpers/PoseFlipFilter.js"></script>
+    
+    <!-- INCLUDE MAIN DEMO SCRIPT -->
     <script src="./main.js"></script>
+
     <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet" />
+
+
     <style type='text/css'>
       body {
         background-color: #333;
@@ -132,5 +152,7 @@
       <canvas id='handTrackerCanvas'></canvas>
     </div>
 
+    <button onclick='change_camera()' id='changeCamera'>Change camera</button>
   </body>
 </html>
+ 
