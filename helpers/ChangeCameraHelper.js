@@ -20,7 +20,7 @@ const ChangeCameraHelper = (function(){
     init: function(spec){
       _spec = Object.assign({
         canvases: [],
-        isSelfieCam: true,
+        isSelfieCam: fals,
         DOMChangeCameraButton: null
       }, spec);
 
